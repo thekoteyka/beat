@@ -1,7 +1,22 @@
 from random import random
-from colorama import init, Fore
 from time import sleep
-init(autoreset=True)
+
+# Может работать без colorama (Не рекомендую)
+try:
+    from colorama import init, Fore
+    init(autoreset=True)
+    max_spaces_fore = 28
+except:
+    class EmergencyFore():
+        YELLOW          = ''
+        BLUE            = ''
+        CYAN            = ''
+        LIGHTRED_EX     = ''
+        LIGHTGREEN_EX   = ''
+        LIGHTWHITE_EX   = ''
+    Fore = EmergencyFore()
+    max_spaces_fore = 23
+
 chase = 0
 # last_hp_1st = 100
 # last_hp_2nd = 100
@@ -34,7 +49,7 @@ class Person:
     
     def printuwu(self, s, other):  # Особый вывод с показом здоровья справа
         s = str(s) # На всякий случай
-        max_spaces = 28 + len(self.NAME) + len(other.NAME) + 5 # Максимальная длинна строки
+        max_spaces = max_spaces_fore + len(self.NAME) + len(other.NAME) + 5 # Максимальная длинна строки
         spaces = (max_spaces - len(s)) * ' ' # Сколько осталось пробелов до макс длинны
 
         hp1st = self.hp  # Хп первого игрока
@@ -97,5 +112,3 @@ while not result == 'finish':
     print()
     chase = 1 if chase == 0 else 0 # Смена хода
     sleep(2)
-
-    
