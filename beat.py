@@ -68,7 +68,7 @@ class Person:
         shield2nd = other.shield
 
         # Даже не пытайся разобраться что тут происходит
-        
+
         if chase == 0: # Чей ход
             spaces_between_hp = (3 - len(str(hp1st))) * ' '
 
@@ -103,9 +103,12 @@ class Person:
             self.hp = 0
 
     def heal_me(self, amount:int):
+        if self.shield < 0:
+            self.damage_me(abs(self.shield))
+            self.shield = 0
         self.hp += amount
         if self.hp > 100:
-            self.shield += 100 - self.hp
+            self.shield += self.hp - 100
             self.hp = 100
     
     def __add__(self, other): # персонаж (атакующий) + персонаж
@@ -116,14 +119,14 @@ class Person:
         
         if self.is_vampirize():
             other.damage_me(self.VAMPIRE_HP_STEAL)
-            self.hp += self.VAMPIRE_HP_STEAL
+            self.heal_me(self.VAMPIRE_HP_STEAL)
             self.printuwu(f'{Fore.CYAN}{self.NAME} украл {self.VAMPIRE_HP_STEAL} здоровья у {other.NAME}', other)
         
         if self.is_crit(): # Если кританул
             damage = self.CRIT_DMG
             other.damage_me(damage)
             self.printuwu(f'{Fore.LIGHTGREEN_EX}{self.NAME} нанёс {damage} крит урона игроку {other.NAME}', other)
-            self.hp += self.CRIT_HEAL
+            self.heal_me(self.CRIT_HEAL)
             self.printuwu(f'{Fore.BLUE}{self.NAME} восстановил {self.CRIT_HEAL} хп', other)
         else: # Если не кританул
             damage = self.DAMAGE
