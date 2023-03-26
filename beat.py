@@ -19,13 +19,15 @@ except:
     max_spaces_fore = 26
 
 chase = 0
-# last_hp_1st = 100
-# last_hp_2nd = 100
+moves = 0
+
 class Person:
     def __init__(self, NAME:str):
         self.NAME:str = NAME   # Имя персонажа
-        self.hp:int =     100  # Здоровье в начале игры
-        self.shield:int = 50   # Щит в начале игры
+        self.MAX_HP =     100  # Максимальное здоровье, после которого пойдут щиты
+        self.DEFAULT_HP = 100  # Здоровье по умолчанию (при старте игры либо после использования тоттема)
+        self.hp:int = self.DEFAULT_HP  # Здоровье в текущий момент времени
+        self.shield:int = 50   # Щит в начале игры и в текущий момент времени
         self.DAMAGE:int = 10   # Стандартный урон
 
         self.CRIT_RATE:float = 0.4 # Шанс критического попадания
@@ -67,6 +69,7 @@ class Person:
         shield1st = self.shield
         shield2nd = other.shield
 
+
         # Даже не пытайся разобраться что тут происходит
 
         if chase == 0: # Чей ход
@@ -85,7 +88,7 @@ class Person:
 
     def die(self):  # Попробовать умереть
         if self.totem_of_immortality: # Если есть тоттем
-            self.hp = 100
+            self.hp = self.DEFAULT_HP
             self.totem_of_immortality -= 1 # Забираем один тоттем
             print(f'{Fore.YELLOW}{self.NAME} использовал Тотем Бессмертия! Осталось: {self.totem_of_immortality}')
             return
@@ -107,9 +110,9 @@ class Person:
             self.damage_me(abs(self.shield))
             self.shield = 0
         self.hp += amount
-        if self.hp > 100:
-            self.shield += self.hp - 100
-            self.hp = 100
+        if self.hp > self.MAX_HP:
+            self.shield += self.hp - self.MAX_HP
+            self.hp = self.MAX_HP
     
     def __add__(self, other): # персонаж (атакующий) + персонаж
         if self.breakdowned:
@@ -141,19 +144,21 @@ class Person:
             other.die()
         
         if not other.alive: # Если противник не жив (то есть мёртв)
-            self.printuwu(f"{Fore.YELLOW}{self.NAME} убил игрока {other.NAME}!", other)
+            self.printuwu(f"{Fore.YELLOW}{self.NAME} убил игрока {other.NAME} за {moves} ходов!", other)
             return 'finish'
 
         
 firstPlayer = Person('Котейка')    # 1st
-secondPlayer = Person('АЛИК') # 2nd
+secondPlayer = Person('АЛИК')      # 2nd
 result = None
 
 while not result == 'finish':
+    moves += 1
     if chase == 0:
         result = firstPlayer + secondPlayer
     else:
         result = secondPlayer + firstPlayer
+    
     print()
     chase = 1 if chase == 0 else 0 # Смена хода
-    sleep(2)
+    sleep(0.2)
