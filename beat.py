@@ -17,9 +17,14 @@ except:
         LIGHTCYAN_EX    = ''
     Fore = EmergencyFore()
     max_spaces_fore = 26
+    print('\n\n\n\n\nНе удалось подключить модуль colorama для цветново вывода, весь текст будет просто белым\nРекомендую \
+установить модуль для красивого вывода.\nОтличать хп от щита также неудобно! Я предупредил\n\n\n')
+    print('Продолжение через 10 секунд')
+    sleep(10)
 
 chase = 0
 moves = 0
+
 
 class Person:
     def __init__(self, NAME:str):
@@ -161,4 +166,4 @@ while not result == 'finish':
     
     print()
     chase = 1 if chase == 0 else 0 # Смена хода
-    sleep(0.2)
+    sleep(2)
