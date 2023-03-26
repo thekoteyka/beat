@@ -14,6 +14,7 @@ except:
         LIGHTRED_EX     = ''
         LIGHTGREEN_EX   = ''
         LIGHTWHITE_EX   = ''
+        LIGHTCYAN_EX    = ''
     Fore = EmergencyFore()
     max_spaces_fore = 26
 
@@ -24,6 +25,7 @@ class Person:
     def __init__(self, NAME:str):
         self.NAME:str = NAME   # Имя персонажа
         self.hp:int =     100  # Здоровье в начале игры
+        self.shield:int = 50   # Щит в начале игры
         self.DAMAGE:int = 10   # Стандартный урон
 
         self.CRIT_RATE:float = 0.4 # Шанс критического попадания
@@ -53,7 +55,7 @@ class Person:
     def is_breakdown(self) -> bool:
         if random() <= self.BREAKDOWN_RATE:
             return True
-        return False
+        return False 
     
     def printuwu(self, s, other):  # Особый вывод с показом здоровья справа
         s = str(s) # На всякий случай
@@ -62,13 +64,24 @@ class Person:
 
         hp1st = self.hp  # Хп первого игрока
         hp2nd = other.hp # Хп второго игрока
+        shield1st = self.shield
+        shield2nd = other.shield
 
+        # Даже не пытайся разобраться что тут происходит
+        
         if chase == 0: # Чей ход
             spaces_between_hp = (3 - len(str(hp1st))) * ' '
-            print(f'{s}{spaces} | {Fore.LIGHTRED_EX} {hp1st}{spaces_between_hp} | {hp2nd}')
+
+            first = f'{Fore.LIGHTCYAN_EX} {shield1st}' if shield1st else f'{Fore.LIGHTRED_EX} {hp1st}'
+            second = f'{Fore.LIGHTCYAN_EX} {shield2nd}' if shield2nd else f'{Fore.LIGHTRED_EX} {hp2nd}'
+            print(f'{s}{spaces} | {first}{spaces_between_hp} | {second}')
         else:
             spaces_between_hp = (3 - len(str(hp2nd))) * ' '
-            print(f'{s}{spaces} | {Fore.LIGHTRED_EX} {hp2nd}{spaces_between_hp} | {hp1st}')
+
+            second = f'{Fore.LIGHTCYAN_EX} {shield1st}' if shield1st else f'{Fore.LIGHTRED_EX} {hp1st}'
+            first = f'{Fore.LIGHTCYAN_EX} {shield2nd}' if shield2nd else f'{Fore.LIGHTRED_EX} {hp2nd}'
+            print(f'{s}{spaces} | {first}{spaces_between_hp} | {second}')
+
 
     def die(self):  # Попробовать умереть
         if self.totem_of_immortality: # Если есть тоттем
@@ -78,10 +91,22 @@ class Person:
             return
         self.alive = False # Иначе персонаж погибает
 
-    def damage_it(self, amount:int): # Нанести урон
+    def damage_me(self, amount:int): # Нанести урон
+        if self.shield:
+            self.shield -= amount
+            if self.shield < 0:
+                self.hp -= abs(self.shield)
+                self.shield = 0
+            return
         self.hp -= amount
         if self.hp < 0: # Чтобы не было отрицательного хп
             self.hp = 0
+
+    def heal_me(self, amount:int):
+        self.hp += amount
+        if self.hp > 100:
+            self.shield += 100 - self.hp
+            self.hp = 100
     
     def __add__(self, other): # персонаж (атакующий) + персонаж
         if self.breakdowned:
@@ -90,19 +115,19 @@ class Person:
             return
         
         if self.is_vampirize():
-            other.damage_it(self.VAMPIRE_HP_STEAL)
+            other.damage_me(self.VAMPIRE_HP_STEAL)
             self.hp += self.VAMPIRE_HP_STEAL
             self.printuwu(f'{Fore.CYAN}{self.NAME} украл {self.VAMPIRE_HP_STEAL} здоровья у {other.NAME}', other)
         
         if self.is_crit(): # Если кританул
             damage = self.CRIT_DMG
-            other.damage_it(damage)
+            other.damage_me(damage)
             self.printuwu(f'{Fore.LIGHTGREEN_EX}{self.NAME} нанёс {damage} крит урона игроку {other.NAME}', other)
             self.hp += self.CRIT_HEAL
             self.printuwu(f'{Fore.BLUE}{self.NAME} восстановил {self.CRIT_HEAL} хп', other)
         else: # Если не кританул
             damage = self.DAMAGE
-            other.damage_it(damage)
+            other.damage_me(damage)
             self.printuwu(f'{Fore.LIGHTWHITE_EX}{self.NAME} нанёс {damage} урона игроку {other.NAME}', other)
 
         if self.is_breakdown():
