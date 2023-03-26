@@ -5,7 +5,7 @@ from time import sleep
 try:
     from colorama import init, Fore
     init(autoreset=True)
-    max_spaces_fore = 28
+    max_spaces_fore = 31
 except:
     class EmergencyFore():
         YELLOW          = ''
@@ -15,7 +15,7 @@ except:
         LIGHTGREEN_EX   = ''
         LIGHTWHITE_EX   = ''
     Fore = EmergencyFore()
-    max_spaces_fore = 23
+    max_spaces_fore = 26
 
 chase = 0
 # last_hp_1st = 100
@@ -30,10 +30,13 @@ class Person:
         self.CRIT_DMG:int =    20  # Урон при критическом попадании
         self.CRIT_HEAL =       30  # Лечение при нанесении критического урона
 
-        self.VAMPIRE_RATE:float =   0.2 # Шанс на кражу здоровья у дрогого игрока
+        self.VAMPIRE_RATE:float =   0.1 # Шанс на кражу здоровья у дрогого игрока
         self.VAMPIRE_HP_STEAL:int = 10  # Количество украденого здоровья 
+
+        self.BREAKDOWN_RATE:float = 0.1 # Шанс на разрушительную атаку
         
         self.alive:bool = True  # Жив ли игрок
+        self.breakdowned:bool = False 
         
         self.totem_of_immortality:int = 1  # Количество Тотемов Бессметрия (Позволяет возродиться 1 раз)
 
@@ -44,6 +47,11 @@ class Person:
     
     def is_vampirize(self) -> bool:  # Украл здоровье ли
         if random() <= self.VAMPIRE_RATE:
+            return True
+        return False
+    
+    def is_breakdown(self) -> bool:
+        if random() <= self.BREAKDOWN_RATE:
             return True
         return False
     
@@ -76,6 +84,11 @@ class Person:
             self.hp = 0
     
     def __add__(self, other): # персонаж (атакующий) + персонаж
+        if self.breakdowned:
+            self.printuwu(f'{Fore.CYAN}{self.NAME} поднялся с земли', other)
+            self.breakdowned = False
+            return
+        
         if self.is_vampirize():
             other.damage_it(self.VAMPIRE_HP_STEAL)
             self.hp += self.VAMPIRE_HP_STEAL
@@ -91,6 +104,10 @@ class Person:
             damage = self.DAMAGE
             other.damage_it(damage)
             self.printuwu(f'{Fore.LIGHTWHITE_EX}{self.NAME} нанёс {damage} урона игроку {other.NAME}', other)
+
+        if self.is_breakdown():
+            other.breakdowned = True
+            self.printuwu(f'{Fore.CYAN}{self.NAME} нанёс пробивающий удар игроку {other.NAME}', other)
         
         if other.hp <= 0:
             other.die()
@@ -100,15 +117,15 @@ class Person:
             return 'finish'
 
         
-me = Person('Котейка')    # 1st
-nikita = Person('Никита') # 2nd
+firstPlayer = Person('Котейка')    # 1st
+secondPlayer = Person('АЛИК') # 2nd
 result = None
 
 while not result == 'finish':
     if chase == 0:
-        result = me + nikita
+        result = firstPlayer + secondPlayer
     else:
-        result = nikita + me
+        result = secondPlayer + firstPlayer
     print()
     chase = 1 if chase == 0 else 0 # Смена хода
     sleep(2)
