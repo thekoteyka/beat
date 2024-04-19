@@ -163,5 +163,5 @@ while not result == 'finish':
     
     
     chase = 1 if chase == 0 else 0 # Смена хода
-    sleep(0.2)
+    sleep(2)
 
