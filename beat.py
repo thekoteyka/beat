@@ -11,6 +11,17 @@ SHOW_MOVES = 1
 chase = 0
 moves = 1
 
+def correct_moves_word():
+    smove = str(moves-1)
+    last = int(smove[-1])
+    if last == 0:
+        return 'ходов'
+    elif last == 1:
+        return 'ход'
+    elif 2 <= last <= 4:
+        return 'хода'
+    elif 5 <= last <= 10:
+        return "ходов"
 
 class Person:
     def __init__(self, NAME:str):
@@ -71,7 +82,7 @@ class Person:
     def die(self, killer) -> Literal['finish', 'totem', 'die']:  # Попробовать умереть
         if self.totem_of_immortality: # Если есть тоттем
             if self.breakdowned:
-                killer.printuwu(f"{Fore.YELLOW}{killer.NAME} убил игрока {self.NAME} сквозь тотем пробивающей атакой за {moves} ходов!", self)
+                killer.printuwu(f"{Fore.YELLOW}{killer.NAME} убил игрока {self.NAME} сквозь тотем пробивающей атакой за {moves-1} {correct_moves_word()}!", self)
                 return 'finish'
             self.hp = self.DEFAULT_HP
             self.totem_of_immortality -= 1 # Забираем один тоттем
@@ -135,7 +146,7 @@ class Person:
                 return 'finish'
         
         if not other.alive: # Если противник не жив (то есть мёртв)
-            self.printuwu(f"{Fore.YELLOW}{self.NAME} убил игрока {other.NAME} за {moves} ходов!", other)
+            self.printuwu(f"{Fore.YELLOW}{self.NAME} убил игрока {other.NAME} за {moves-1} {correct_moves_word()}!", other)
             return 'finish'
 
         
@@ -163,5 +174,5 @@ while not result == 'finish':
     
     
     chase = 1 if chase == 0 else 0 # Смена хода
-    sleep(2)
+    # sleep(2)
 
