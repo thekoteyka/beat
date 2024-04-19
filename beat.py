@@ -12,7 +12,7 @@ chase = 0
 moves = 1
 
 def correct_moves_word():
-    smove = str(moves-1)
+    smove = str(moves)
     last = int(smove[-1])
     if last == 0:
         return 'ходов'
@@ -82,7 +82,7 @@ class Person:
     def die(self, killer) -> Literal['finish', 'totem', 'die']:  # Попробовать умереть
         if self.totem_of_immortality: # Если есть тоттем
             if self.breakdowned:
-                killer.printuwu(f"{Fore.YELLOW}{killer.NAME} убил игрока {self.NAME} сквозь тотем пробивающей атакой за {moves-1} {correct_moves_word()}!", self)
+                killer.printuwu(f"{Fore.YELLOW}{killer.NAME} убил игрока {self.NAME} сквозь тотем пробивающей атакой за {moves} {correct_moves_word()}!", self)
                 return 'finish'
             self.hp = self.DEFAULT_HP
             self.totem_of_immortality -= 1 # Забираем один тоттем
@@ -146,7 +146,7 @@ class Person:
                 return 'finish'
         
         if not other.alive: # Если противник не жив (то есть мёртв)
-            self.printuwu(f"{Fore.YELLOW}{self.NAME} убил игрока {other.NAME} за {moves-1} {correct_moves_word()}!", other)
+            self.printuwu(f"{Fore.YELLOW}{self.NAME} убил игрока {other.NAME} за {moves} {correct_moves_word()}!", other)
             return 'finish'
 
         
@@ -155,6 +155,7 @@ secondPlayer = Person('АЛИК')      # 2nd
 result = None
 
 while not result == 'finish':
+    moves += 1
     if SHOW_MOVES:
         if moves == 1:
             print(f"   {Fore.LIGHTMAGENTA_EX}[{moves}]")
@@ -166,7 +167,7 @@ while not result == 'finish':
             print(f"   {Fore.LIGHTMAGENTA_EX}{moves}")
     else:
         print()
-    moves += 1
+
     if chase == 0:
         result = firstPlayer + secondPlayer
     else:
@@ -174,5 +175,5 @@ while not result == 'finish':
     
     
     chase = 1 if chase == 0 else 0 # Смена хода
-    # sleep(2)
+    sleep(2)
 
