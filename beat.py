@@ -167,3 +167,5 @@ while not result == 'finish':
     print()
     chase = 1 if chase == 0 else 0 # Смена хода
     sleep(2)
+
+#test
