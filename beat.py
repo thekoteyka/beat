@@ -1,29 +1,15 @@
 from random import random
 from time import sleep
+from typing import Literal
 
-# Может работать без colorama (Не рекомендую)
-try:
-    from colorama import init, Fore
-    init(autoreset=True)
-    max_spaces_fore = 31
-except:
-    class EmergencyFore():
-        YELLOW          = ''
-        BLUE            = ''
-        CYAN            = ''
-        LIGHTRED_EX     = ''
-        LIGHTGREEN_EX   = ''
-        LIGHTWHITE_EX   = ''
-        LIGHTCYAN_EX    = ''
-    Fore = EmergencyFore()
-    max_spaces_fore = 26
-    print('\n\n\n\n\nНе удалось подключить модуль colorama для цветново вывода, весь текст будет просто белым\nРекомендую \
-установить модуль для красивого вывода.\nОтличать хп от щита также неудобно! Я предупредил\n\n\n')
-    print('Продолжение через 10 секунд')
-    sleep(10)
+# Больше не может работать без colorama
+from colorama import init, Fore
+init(autoreset=True)
+
+SHOW_MOVES = 1
 
 chase = 0
-moves = 0
+moves = 1
 
 
 class Person:
@@ -66,38 +52,36 @@ class Person:
     
     def printuwu(self, s, other):  # Особый вывод с показом здоровья справа
         s = str(s) # На всякий случай
-        max_spaces = max_spaces_fore + len(self.NAME) + len(other.NAME) + 5 # Максимальная длинна строки
-        spaces = (max_spaces - len(s)) * ' ' # Сколько осталось пробелов до макс длинны
 
         hp1st = self.hp  # Хп первого игрока
         hp2nd = other.hp # Хп второго игрока
         shield1st = self.shield
         shield2nd = other.shield
 
-
-        # Даже не пытайся разобраться что тут происходит
-
         if chase == 0: # Чей ход
-            spaces_between_hp = (3 - len(str(hp1st))) * ' '
-
-            first = f'{Fore.LIGHTCYAN_EX} {shield1st}' if shield1st else f'{Fore.LIGHTRED_EX} {hp1st}'
-            second = f'{Fore.LIGHTCYAN_EX} {shield2nd}' if shield2nd else f'{Fore.LIGHTRED_EX} {hp2nd}'
-            print(f'{s}{spaces} | {first}{spaces_between_hp} | {second}')
+            first = f'{Fore.LIGHTCYAN_EX}{shield1st}' if shield1st else f'{Fore.LIGHTRED_EX}{hp1st}'
+            second = f'{Fore.LIGHTCYAN_EX}{shield2nd}' if shield2nd else f'{Fore.LIGHTRED_EX}{hp2nd}'
+            print(f'{first:<8} {Fore.MAGENTA}| {second:>8} {Fore.WHITE}| {s}')
         else:
-            spaces_between_hp = (3 - len(str(hp2nd))) * ' '
-
-            second = f'{Fore.LIGHTCYAN_EX} {shield1st}' if shield1st else f'{Fore.LIGHTRED_EX} {hp1st}'
-            first = f'{Fore.LIGHTCYAN_EX} {shield2nd}' if shield2nd else f'{Fore.LIGHTRED_EX} {hp2nd}'
-            print(f'{s}{spaces} | {first}{spaces_between_hp} | {second}')
+            second = f'{Fore.LIGHTCYAN_EX}{shield1st}' if shield1st else f'{Fore.LIGHTRED_EX}{hp1st}'
+            first = f'{Fore.LIGHTCYAN_EX}{shield2nd}' if shield2nd else f'{Fore.LIGHTRED_EX}{hp2nd}'
+            print(f'{first:<8} {Fore.MAGENTA}| {second:>8} {Fore.WHITE}| {s}')
 
 
-    def die(self):  # Попробовать умереть
+    def die(self, killer) -> Literal['finish', 'totem', 'die']:  # Попробовать умереть
         if self.totem_of_immortality: # Если есть тоттем
+            if self.breakdowned:
+                killer.printuwu(f"{Fore.YELLOW}{killer.NAME} убил игрока {self.NAME} сквозь тотем пробивающей атакой за {moves} ходов!", self)
+                return 'finish'
             self.hp = self.DEFAULT_HP
             self.totem_of_immortality -= 1 # Забираем один тоттем
-            print(f'{Fore.YELLOW}{self.NAME} использовал Тотем Бессмертия! Осталось: {self.totem_of_immortality}')
-            return
+            if self.totem_of_immortality == 0:
+                print(f'{Fore.YELLOW}{self.NAME} использовал свой последний Тотем Бессмертия!')
+            else:
+                print(f'{Fore.YELLOW}{self.NAME} использовал Тотем Бессмертия! Осталось: {self.totem_of_immortality}')
+            return 'totem'
         self.alive = False # Иначе персонаж погибает
+        return 'die'
 
     def damage_me(self, amount:int): # Нанести урон
         if self.shield:
@@ -146,7 +130,9 @@ class Person:
             self.printuwu(f'{Fore.CYAN}{self.NAME} нанёс пробивающий удар игроку {other.NAME}', other)
         
         if other.hp <= 0:
-            other.die()
+            res = other.die(self)
+            if res == 'finish':
+                return 'finish'
         
         if not other.alive: # Если противник не жив (то есть мёртв)
             self.printuwu(f"{Fore.YELLOW}{self.NAME} убил игрока {other.NAME} за {moves} ходов!", other)
@@ -158,14 +144,24 @@ secondPlayer = Person('АЛИК')      # 2nd
 result = None
 
 while not result == 'finish':
+    if SHOW_MOVES:
+        if moves == 1:
+            print(f"   {Fore.LIGHTMAGENTA_EX}[{moves}]")
+        elif moves < 10:
+            print(f"{Fore.LIGHTMAGENTA_EX}{moves:^9}")
+        elif 10 <= moves < 100:
+            print(f"   {Fore.LIGHTMAGENTA_EX}{str(moves)[0]}|{str(moves)[1]}")
+        elif moves >= 100:
+            print(f"   {Fore.LIGHTMAGENTA_EX}{moves}")
+    else:
+        print()
     moves += 1
     if chase == 0:
         result = firstPlayer + secondPlayer
     else:
         result = secondPlayer + firstPlayer
     
-    print()
+    
     chase = 1 if chase == 0 else 0 # Смена хода
-    sleep(2)
+    sleep(0.2)
 
-#test
